@@ -26,6 +26,14 @@ const utils = {
 }
 
 class Sudoku {
+  get elapsedTime() {
+    if (this.debugInfo.start && this.debugInfo.end) {
+      return this.debugInfo.end - this.debugInfo.start
+    } else {
+      return false
+    }
+  }
+
   /**
    * ```
    * 6 4 2 | 9 7 8 | 5 1 3  |
@@ -44,6 +52,10 @@ class Sudoku {
    * @param {number?} unit default is 3
    */
   constructor(unit) {
+    /**
+     * Time limit, 2000 ms
+     */
+    this.limit = 2000
     this.reset(unit)
   }
 
@@ -224,32 +236,36 @@ class Sudoku {
   /**
    *
    * @param {number} pos
+   * @property {boolean} ordered default is `true`
    * @private
    */
-  generatePos(pos) {
+  generatePos(pos, ordered = false) {
     this.debugInfo.callGenerate = (this.debugInfo.callGenerate || 1) + 1
     const [x, y] = this.num2Pos(pos)
 
     if (this.get(x, y)) {
-      return this.generatePos(pos + 1)
+      return this.generatePos(pos + 1, ordered)
     }
 
     if (pos >= this.count * this.count) {
       return true
     }
 
-    const rest = utils.disorderArray(this.getRest(x, y))
+    let rest = this.getRest(x, y)
+    if (!ordered) {
+      rest = utils.disorderArray(rest)
+    }
 
     for (const value of rest) {
       this.set(x, y, value)
-      if (this.generatePos(pos + 1)) {
+      if (this.generatePos(pos + 1, ordered)) {
         return true
       }
     }
 
     this.debugInfo.reGeneratePos = (this.debugInfo.reGeneratePos || 1) + 1
 
-    if (this.debugInfo.reGeneratePos > 100000) {
+    if (new Date().getTime() - this.debugInfo.start > this.limit) {
       throw new Error('Regenerate too much times: ' + this.debugInfo.reGeneratePos)
     }
 
@@ -264,7 +280,9 @@ class Sudoku {
       this.generateBox(i * this.unit + i)
     }
 
+    this.debugInfo.start = new Date().getTime()
     this.generatePos(0)
+    this.debugInfo.end = new Date().getTime()
   }
 
   /**
@@ -284,8 +302,9 @@ class Sudoku {
    *
    * @param {string} sudoku
    * @param {number} unit default is 3
+   * @param {boolean} ordered default is `true`
    */
-  resolve(sudoku, unit = 3) {
+  resolve(sudoku, unit = 3, ordered = true) {
     const source = sudoku
       .trim()
       .split(/\s+/g)
@@ -300,7 +319,9 @@ class Sudoku {
     this.reset(unit)
     this.origin = source
 
-    this.generatePos(0)
+    this.debugInfo.start = new Date().getTime()
+    this.generatePos(0, ordered)
+    this.debugInfo.end = new Date().getTime()
   }
 
   /**
@@ -370,19 +391,13 @@ class Sudoku {
 const sudoku = new Sudoku(3)
 
 function generateSudoku() {
-  const start = new Date().getTime()
   sudoku.generate()
-  const end = new Date().getTime()
-
-  const time = end - start
 
   console.log(sudoku.toString())
-  console.log(sudoku.validate(), time, sudoku.debugInfo)
+  console.log(sudoku.validate(), sudoku.elapsedTime, sudoku.debugInfo)
 
   document.getElementById('sudoku-code').innerText = sudoku.toString()
-  document.getElementById('sudoku-generate').innerText = 'reGenerate: ' + time + 'ms'
-
-  return time
+  document.getElementById('sudoku-generate').innerText = 'reGenerate: ' + sudoku.elapsedTime + 'ms'
 }
 
 document.getElementById('sudoku-generate').onclick = () => generateSudoku()
@@ -406,4 +421,4 @@ const sudokuStr = `
 sudoku.resolve(sudokuStr.replace(/[|-]/g, ''))
 
 console.log('resolve:' + sudokuStr + '=>\n' + sudoku.toString())
-console.log(sudoku.validate(), sudoku.debugInfo)
+console.log(sudoku.validate(), sudoku.elapsedTime, sudoku.debugInfo)
