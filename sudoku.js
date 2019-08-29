@@ -1,3 +1,30 @@
+const utils = {
+  /**
+   *
+   * @param {number[]} arr
+   */
+  random(arr) {
+    const idx = ~~(Math.random() * arr.length)
+
+    return arr[idx] || 0
+  },
+  /**
+   *
+   * @param {number[]} arr
+   */
+  disorderArray(arr) {
+    arr = arr.slice(0)
+    const rest = []
+
+    while (arr.length) {
+      const idx = ~~(Math.random() * arr.length)
+      rest.push(arr.splice(idx, 1)[0])
+    }
+
+    return rest
+  }
+}
+
 class Sudoku {
   /**
    *
@@ -94,7 +121,7 @@ class Sudoku {
    *
    * @param {number} num
    */
-  getRange(num) {
+  getBox(num) {
     const [startX, startY] = this.boxPosMap[num]
 
     const arr = []
@@ -116,9 +143,9 @@ class Sudoku {
    * @param {number} x
    * @param {number} y
    */
-  getRangeByPos(x, y) {
-    const num = this.getRangeNumber(x, y)
-    return this.getRange(num)
+  getBoxByPos(x, y) {
+    const num = this.getBoxNumber(x, y)
+    return this.getBox(num)
   }
 
   /**
@@ -126,7 +153,7 @@ class Sudoku {
    * @param {number} x
    * @param {number} y
    */
-  getRangeNumber(x, y) {
+  getBoxNumber(x, y) {
     for (const pos in this.boxPosMap) {
       const [startX, startY] = this.boxPosMap[pos]
 
@@ -138,32 +165,6 @@ class Sudoku {
 
   /**
    *
-   * @param {number[]} arr
-   */
-  random(arr) {
-    const idx = ~~(Math.random() * arr.length)
-
-    return arr[idx] || 0
-  }
-
-  /**
-   *
-   * @param {number[]} arr
-   */
-  reRandom(arr) {
-    arr = arr.slice(0)
-    const rest = []
-
-    while (arr.length) {
-      const idx = ~~(Math.random() * arr.length)
-      rest.push(arr.splice(idx, 1)[0])
-    }
-
-    return rest
-  }
-
-  /**
-   *
    * @param {number} x
    * @param {number} y
    */
@@ -171,7 +172,7 @@ class Sudoku {
     const rest = this.poll.slice(0)
     const row = this.getRow(y).filter((n) => !!n)
     const column = this.getColumn(x).filter((n) => !!n)
-    const range = this.getRangeByPos(x, y).filter((n) => !!n)
+    const range = this.getBoxByPos(x, y).filter((n) => !!n)
 
     row
       .concat(column)
@@ -207,7 +208,7 @@ class Sudoku {
 
     for (let y = startY; y < startY + this.unit; y++) {
       for (let x = startX; x < startX + this.unit; x++) {
-        const value = this.random(this.getRest(x, y))
+        const value = utils.random(this.getRest(x, y))
         this.set(x, y, value)
       }
     }
@@ -228,18 +229,18 @@ class Sudoku {
         return true
       }
 
-      const rest = this.reRandom(this.getRest(x, y))
+      const rest = utils.disorderArray(this.getRest(x, y))
 
       for (const value of rest) {
         this.set(x, y, value)
         if (generatePos(pos + 1)) {
           return true
         }
-        this.set(x, y, 0)
       }
 
       this.debugInfo.reGeneratePos = (this.debugInfo.reGeneratePos || 1) + 1
 
+      this.set(x, y, 0)
       return false
     }
 
@@ -281,7 +282,7 @@ class Sudoku {
       if (!pass) {
         return false
       }
-      pass = this.validateRange(this.getRange(i))
+      pass = this.validateRange(this.getBox(i))
       if (!pass) {
         return false
       }
@@ -313,7 +314,7 @@ class Sudoku {
 
 const sudoku = new Sudoku()
 
-function start() {
+function generateSudoku() {
   const start = new Date().getTime()
   sudoku.generate()
   const end = new Date().getTime()
@@ -321,13 +322,14 @@ function start() {
   const time = end - start
 
   console.log(sudoku.toString())
-  console.log(sudoku.validate(), sudoku.debugInfo)
+  console.log(sudoku.validate(), time, sudoku.debugInfo)
 
   document.getElementById('sudoku-code').innerText = sudoku.toString()
-  document.getElementById('sudoku-generate').innerText = 'reGenerate: ' + time +'ms'
+  document.getElementById('sudoku-generate').innerText = 'reGenerate: ' + time + 'ms'
 
   return time
 }
 
-document.getElementById('sudoku-generate').onclick = () => start()
-start()
+document.getElementById('sudoku-generate').onclick = () => generateSudoku()
+
+generateSudoku()
