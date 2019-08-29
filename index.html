@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Sudoku</title>
+    <style>
+      #sudoku {
+        width: fit-content;
+        margin: 100px auto;
+        font-size: 30px;
+      }
+
+      .center {
+        display: block;
+        margin: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="sudoku">
+      <h1 class="title" style="text-align: center">数独 (Sudoku) </h1>
+      <pre><code id="sudoku-code"> 123</code></pre>
+      <button class="center" id="sudoku-generate">Regenerate</button>
+    </div>
+    <script src="./sudoku.js"></script>
+  </body>
+</html>
