@@ -214,45 +214,85 @@ class Sudoku {
     }
   }
 
-  generate() {
-    this.clear()
+  /**
+   *
+   * @param {number} pos
+   */
+  generatePos(pos) {
+    this.debugInfo.callGenerate = (this.debugInfo.callGenerate || 1) + 1
+    const [x, y] = this.num2Pos(pos)
 
-    const generatePos = (pos) => {
-      this.debugInfo.callGenerate = (this.debugInfo.callGenerate || 1) + 1
-      const [x, y] = this.num2Pos(pos)
+    if (this.get(x, y)) {
+      return this.generatePos(pos + 1)
+    }
 
-      if (this.get(x, y)) {
-        return generatePos(pos + 1)
-      }
+    if (pos >= this.count * this.count) {
+      return true
+    }
 
-      if (pos >= this.count * this.count) {
+    const rest = utils.disorderArray(this.getRest(x, y))
+
+    for (const value of rest) {
+      this.set(x, y, value)
+      if (this.generatePos(pos + 1)) {
         return true
       }
-
-      const rest = utils.disorderArray(this.getRest(x, y))
-
-      for (const value of rest) {
-        this.set(x, y, value)
-        if (generatePos(pos + 1)) {
-          return true
-        }
-      }
-
-      this.debugInfo.reGeneratePos = (this.debugInfo.reGeneratePos || 1) + 1
-
-      if (this.debugInfo.reGeneratePos > 100000) {
-        throw new Error('Regenerate too much times: ' + this.debugInfo.reGeneratePos)
-      }
-
-      this.set(x, y, 0)
-      return false
     }
+
+    this.debugInfo.reGeneratePos = (this.debugInfo.reGeneratePos || 1) + 1
+
+    if (this.debugInfo.reGeneratePos > 100000) {
+      throw new Error('Regenerate too much times: ' + this.debugInfo.reGeneratePos)
+    }
+
+    this.set(x, y, 0)
+    return false
+  }
+
+  generate() {
+    this.clear()
 
     for (let i = 0; i < this.unit; i++) {
       this.generateBox(i * this.unit + i)
     }
 
-    generatePos(0)
+    this.generatePos(0)
+  }
+
+  /**
+   * A string like
+   *
+   * 6 0 9 8 3 1 4 7 5
+   * 3 8 5 4 2 7 6 1 9
+   * 4 1 7 9 6 5 3 2 8
+   * 2 3 1 7 4 8 5 9 6
+   * 8 0 6 3 1 9 7 4 2
+   * 7 9 4 6 5 2 8 3 1
+   * 5 4 3 1 9 0 2 8 7
+   * 9 7 2 5 8 4 1 6 3
+   * 1 6 8 2 7 3 9 5 0
+   *
+   * unfilled value is `0`
+   *
+   * @param {string} sudoku
+   * @param {number} unit default is 3
+   */
+  resolve(sudoku, unit = 3) {
+    const source = sudoku
+      .trim()
+      .split(/\s+/g)
+      .map((n) => +n)
+
+    const failedNumbers = source.filter((n) => n < 0 || n > this.count)
+
+    if (source.length !== this.count * this.count || failedNumbers.length > 0) {
+      throw new Error('It seem not right sudoku string. Wrong numbers: ' + JSON.stringify(failedNumbers))
+    }
+
+    this.reset(unit)
+    this.origin = source
+
+    this.generatePos(0)
   }
 
   /**
@@ -318,7 +358,7 @@ class Sudoku {
   }
 }
 
-const sudoku = new Sudoku(4)
+const sudoku = new Sudoku(3)
 
 function generateSudoku() {
   const start = new Date().getTime()
@@ -339,3 +379,18 @@ function generateSudoku() {
 document.getElementById('sudoku-generate').onclick = () => generateSudoku()
 
 generateSudoku()
+
+const sudokuStr = `2 1 0 3 5 7 9 6 4
+ 0 0 0 8 1 2 5 0 3
+ 3 0 5 9 4 6 0 2 1
+ 0 3 2 6 7 0 1 9 5
+ 8 5 7 2 9 0 4 3 6
+ 6 9 1 5 0 4 7 8 2
+ 1 4 6 0 2 9 3 5 8
+ 5 2 9 1 8 3 6 4 7
+ 7 8 3 4 6 5 0 1 9
+`
+sudoku.resolve(sudokuStr)
+
+console.log(sudoku.toString())
+console.log(sudoku.validate(), sudoku.debugInfo)
