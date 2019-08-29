@@ -13,7 +13,7 @@ const utils = {
    * @param {number[]} arr
    */
   disorderArray(arr) {
-    arr = arr.slice(0)
+    arr = arr.slice()
     const rest = []
 
     while (arr.length) {
@@ -40,7 +40,7 @@ class Sudoku {
    * 2 7 4 | 3 5 6 | 1 8 9
    * 1 5 8 | 4 2 9 | 6 3 7
    * ```
-   * 
+   *
    * @param {number?} unit default is 3
    */
   constructor(unit) {
@@ -168,6 +168,7 @@ class Sudoku {
    *
    * @param {number} x
    * @param {number} y
+   * @private
    */
   getBoxNumber(x, y) {
     for (const pos in this.boxPosMap) {
@@ -183,16 +184,18 @@ class Sudoku {
    *
    * @param {number} x
    * @param {number} y
+   * @private
    */
   getRest(x, y) {
-    const rest = this.pool.slice(0)
-    const row = this.getRow(y).filter((n) => !!n)
-    const column = this.getColumn(x).filter((n) => !!n)
-    const range = this.getBoxByPos(x, y).filter((n) => !!n)
+    const rest = this.pool.slice()
+    const row = this.getRow(y)
+    const column = this.getColumn(x)
+    const box = this.getBoxByPos(x, y)
 
     row
       .concat(column)
-      .concat(range)
+      .concat(box)
+      .filter((n) => !!n)
       .forEach((val) => {
         const idx = rest.indexOf(val)
         if (idx >= 0) {
@@ -201,18 +204,6 @@ class Sudoku {
       })
 
     return rest
-  }
-
-  /**
-   * origin value Iterator
-   * @param {(x:number, y:number, value:number) => void} func
-   */
-  each(func) {
-    for (let y = 0; y < this.count; y++) {
-      for (let x = 0; x < this.count; x++) {
-        func(x, y, this.get(x, y))
-      }
-    }
   }
 
   /**
@@ -233,6 +224,7 @@ class Sudoku {
   /**
    *
    * @param {number} pos
+   * @private
    */
   generatePos(pos) {
     this.debugInfo.callGenerate = (this.debugInfo.callGenerate || 1) + 1
@@ -313,10 +305,11 @@ class Sudoku {
 
   /**
    *
+   * @private
    * @param {number[]} arr
    */
   validateRange(arr) {
-    arr = arr.slice(0)
+    arr = arr.slice()
 
     for (let i = 1; i <= this.count; i++) {
       const idx = arr.indexOf(i)
@@ -396,17 +389,21 @@ document.getElementById('sudoku-generate').onclick = () => generateSudoku()
 
 generateSudoku()
 
-const sudokuStr = `2 1 0 3 5 7 9 6 4
- 0 0 0 8 1 2 5 0 3
- 3 0 5 9 4 6 0 2 1
- 0 3 2 6 7 0 1 9 5
- 8 5 7 2 9 0 4 3 6
- 6 9 1 5 0 4 7 8 2
- 1 4 6 0 2 9 3 5 8
- 5 2 9 1 8 3 6 4 7
- 7 8 3 4 6 5 0 1 9
+const sudokuStr = `
+2 1 0 | 3 5 7 | 9 6 4
+0 0 0 | 8 1 2 | 5 0 3
+3 0 5 | 9 4 6 | 0 2 1
+---------------------
+0 3 2 | 6 7 0 | 1 9 5
+8 5 7 | 2 9 0 | 4 3 6
+6 9 1 | 5 0 4 | 7 8 2
+---------------------
+1 4 6 | 0 2 9 | 3 5 8
+5 2 9 | 1 8 3 | 6 4 7
+7 8 3 | 4 6 5 | 0 1 9
 `
-sudoku.resolve(sudokuStr)
 
-console.log(sudoku.toString())
+sudoku.resolve(sudokuStr.replace(/[|-]/g, ''))
+
+console.log('resolve:' + sudokuStr + '=>\n' + sudoku.toString())
 console.log(sudoku.validate(), sudoku.debugInfo)
