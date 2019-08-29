@@ -43,7 +43,7 @@ class Sudoku {
     this.unit = unit || this.unit || 3
     this.count = Math.pow(this.unit, 2)
 
-    this.poll = new Array(this.count).fill(0).map((_, i) => i + 1)
+    this.pool = new Array(this.count).fill(0).map((_, i) => i + 1)
     // this.origin = new Array(this.count * this.count).fill(0)
     this.clear()
 
@@ -169,7 +169,7 @@ class Sudoku {
    * @param {number} y
    */
   getRest(x, y) {
-    const rest = this.poll.slice(0)
+    const rest = this.pool.slice(0)
     const row = this.getRow(y).filter((n) => !!n)
     const column = this.getColumn(x).filter((n) => !!n)
     const range = this.getBoxByPos(x, y).filter((n) => !!n)
