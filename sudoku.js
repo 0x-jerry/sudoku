@@ -27,8 +27,21 @@ const utils = {
 
 class Sudoku {
   /**
-   *
-   * @param {number?} unit
+   * ```
+   * 6 4 2 | 9 7 8 | 5 1 3  |
+   * 5 1 3 | 6 4 2 | 9 7 8  |<-- unit = 3 => count = unit * unit = 9
+   * 7 8 9 | 5 3 1 | 4 6 2  |
+   * ---------------------
+   * 4 6 1 | 7 9 3 | 8 2 5
+   * 9 2 7 | 8 6 5 | 3 4 1
+   * 8 3 5 | 2 1 4 | 7 9 6
+   * ---------------------
+   * 3 9 6 | 1 8 7 | 2 5 4
+   * 2 7 4 | 3 5 6 | 1 8 9
+   * 1 5 8 | 4 2 9 | 6 3 7
+   * ```
+   * 
+   * @param {number?} unit default is 3
    */
   constructor(unit) {
     this.reset(unit)
@@ -47,6 +60,9 @@ class Sudoku {
     // this.origin = new Array(this.count * this.count).fill(0)
     this.clear()
 
+    /**
+     * Every 3x3 box start position
+     */
     this.boxPosMap = {}
 
     for (let i = 0; i < this.count; i++) {
