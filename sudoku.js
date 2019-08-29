@@ -297,7 +297,9 @@ class Sudoku {
 
     for (let i = 0; i < this.count; i++) {
       if (i % this.unit === 0 && i !== 0) {
-        str.push('-'.repeat(this.count + this.count + 3))
+        const wholeLen = this.count * len + (this.count - 1) + (this.unit - 1) * 2
+
+        str.push('-'.repeat(wholeLen))
       }
 
       const rowStr = this.getRow(i).map((n) => n.toString().padStart(len, ' '))
@@ -312,7 +314,7 @@ class Sudoku {
   }
 }
 
-const sudoku = new Sudoku()
+const sudoku = new Sudoku(3)
 
 function generateSudoku() {
   const start = new Date().getTime()
