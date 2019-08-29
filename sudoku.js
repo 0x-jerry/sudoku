@@ -240,6 +240,10 @@ class Sudoku {
 
       this.debugInfo.reGeneratePos = (this.debugInfo.reGeneratePos || 1) + 1
 
+      if (this.debugInfo.reGeneratePos > 100000) {
+        throw new Error('Regenerate too much times: ' + this.debugInfo.reGeneratePos)
+      }
+
       this.set(x, y, 0)
       return false
     }
@@ -314,7 +318,7 @@ class Sudoku {
   }
 }
 
-const sudoku = new Sudoku(3)
+const sudoku = new Sudoku(4)
 
 function generateSudoku() {
   const start = new Date().getTime()
