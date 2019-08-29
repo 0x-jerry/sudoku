@@ -219,7 +219,7 @@ class Sudoku {
   }
 
   /**
-   * produce 3x3 puzzle
+   * generate 3x3 box
    * @param {number} num
    */
   generateBox(num) {
@@ -236,7 +236,7 @@ class Sudoku {
   /**
    *
    * @param {number} pos
-   * @property {boolean} ordered default is `true`
+   * @property {boolean} ordered default is `false`
    * @private
    */
   generatePos(pos, ordered = false) {
